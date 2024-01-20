@@ -1,0 +1,4 @@
+fastapi==[version]
+uvicorn==[version]
+pandas==[version]
+scikit-learn==[version]
