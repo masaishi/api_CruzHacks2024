@@ -6,7 +6,7 @@ from typing import List, Dict, Any
 
 app = FastAPI()
 
-hot_df = pd.read_csv("./data/hot_results_20240113231450.csv")
+hot_df = pd.read_csv("data/hot_results.csv")
 
 def get_word_frequencies(text_data):
     # Initialize the CountVectorizer
