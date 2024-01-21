@@ -8,14 +8,13 @@ from typing import List, Dict, Any, Tuple
 
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 
-
-
 app = FastAPI()
 origins = [
 	"http://localhost",
 	"http://localhost:3000",
 	"https://cruzhacks2024.netlify.app",
-	"https://web-cruz-hacks2024.vercel.app/",
+	"https://web-cruz-hacks2024.vercel.app",
+	"https://web-cruz-hacks2024.vercel.app/"
 ]
 app.add_middleware(
 	CORSMiddleware,
@@ -223,8 +222,12 @@ def format_word_data(word: Tuple) -> Dict[str, Any]:
 		"neutral_freq": word[3],
 		"positive_freq": word[4],
 		"negative_freq": word[5],
-		"neutral_num": word[6],
-		"positive_num": word[7],
-		"negative_num": word[8],
+		"all_tfidf": word[6],
+		"neutral_tfidf": word[7],
+		"positive_tfidf": word[8],
+		"negative_tfidf": word[9],
+		"neutral_num": word[10],
+		"positive_num": word[11],
+		"negative_num": word[12],
 	}
 
