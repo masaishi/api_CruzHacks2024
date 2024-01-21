@@ -1,7 +1,11 @@
+import os
 from fastapi import FastAPI, HTTPException, Query
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
+import openai
 from typing import List, Dict, Any, Tuple
+
+openai.api_key = os.environ.get('OPENAI_API_KEY')
 
 app = FastAPI()
 
@@ -12,7 +16,30 @@ engine = create_engine('sqlite:///./data/hot_data.db')
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 categories = ["all", "neutral", "positive", "negative"]
-from typing import List, Dict, Optional
+
+@app.get("/chatgpt")
+def chatgpt(
+	input: str,
+	prompt: str = "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+) -> Dict[str, Any]:
+	"""
+	Get chatgpt response.
+
+	Args:
+	prompt (str): Prompt to get response for.
+
+	Returns:
+	Dict[str, Any]: Dictionary containing chatgpt response.
+	"""
+	completion = openai.ChatCompletion.create(
+		model="gpt-3.5-turbo",
+		messages=[
+			{"role": "system", "content": prompt},
+			{"role": "user", "content": input},
+		]
+	)
+	return completion.choices[0]
+
 
 @app.get("/word_freq")
 def word_freq(

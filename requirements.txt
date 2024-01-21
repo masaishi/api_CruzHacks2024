@@ -3,4 +3,4 @@ uvicorn==0.26.0
 pandas==2.2.0
 scikit-learn==1.4.0
 sqlalchemy==2.0.25
-
+openai==0.28.0
