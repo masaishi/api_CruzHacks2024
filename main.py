@@ -50,17 +50,16 @@ def examples(
 	"""
 	with SessionLocal() as session:
 		try:
-			examples = []
+			response = {'examples': []}
 			example_sentences = fetch_example_sentences(session, word, limit)
 			comment_ids = [fetch_comment_from_sentence(session, sentence["id"]) for sentence in example_sentences]
 			for comment_id in comment_ids:
 				sentence_ids = fetch_sentences_from_comment(session, comment_id)
-				print(sentence_ids)
-				
-				#for sentence in sentences:
-				#	if sentence["id"] not in [s["id"] for s in example_sentences]:
-				#		example_sentences.append(format_sentence_data(sentence))
-			return examples
+				comment = []
+				for sentence_id in sentence_ids:
+					comment.append(fetch_sentence_data(session, sentence_id))
+				response['examples'].append(comment)
+			return response
 		except Exception as e:
 			# Log the exception or handle it as needed
 			print(f"An error occurred: {e}")
@@ -88,6 +87,21 @@ def fetch_word_data(query: str) -> List[Dict[str, Any]]:
 			# Log the exception or handle it as needed
 			print(f"An error occurred: {e}")
 	return outputs
+
+def fetch_sentence_data(session, sentence_id: int) -> Dict[str, Any]:
+	"""Fetch sentence data for a given sentence."""
+	query = text(f"""
+	SELECT *
+	FROM sentences
+	WHERE id = '{sentence_id}'
+	""")
+	try:
+		sentence = session.execute(query).fetchone()
+		return format_sentence_data(sentence)
+	except Exception as e:
+		# Log the exception or handle it as needed
+		print(f"Error fetching sentence: {e}")
+		return {}
 
 def fetch_comment_from_sentence(session, sentence_id: int) -> Dict[str, Any]:
 	"""Fetch comment data for a given sentence."""
