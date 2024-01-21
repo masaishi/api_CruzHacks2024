@@ -33,8 +33,8 @@ def word_freq(
 	word_query = create_word_query(freq_column, limit)
 	return fetch_word_data(word_query)
 
-@app.get("/detailed/{word}")
-def detailed_word_data(
+@app.get("/examples/{word}")
+def examples(
 	word: str,
 	limit: int = 10,
 ) -> Dict[str, Any]:
@@ -50,10 +50,17 @@ def detailed_word_data(
 	"""
 	with SessionLocal() as session:
 		try:
-			word_data = {}
-			word_data["examples"] = fetch_example_sentences(session, word, limit)
-			print("word_data", word_data)
-			return word_data
+			examples = []
+			example_sentences = fetch_example_sentences(session, word, limit)
+			comment_ids = [fetch_comment_from_sentence(session, sentence["id"]) for sentence in example_sentences]
+			for comment_id in comment_ids:
+				sentence_ids = fetch_sentences_from_comment(session, comment_id)
+				print(sentence_ids)
+				
+				#for sentence in sentences:
+				#	if sentence["id"] not in [s["id"] for s in example_sentences]:
+				#		example_sentences.append(format_sentence_data(sentence))
+			return examples
 		except Exception as e:
 			# Log the exception or handle it as needed
 			print(f"An error occurred: {e}")
@@ -63,7 +70,7 @@ def detailed_word_data(
 def create_word_query(freq_column: str, limit: int) -> str:
 	"""Create SQL query to fetch words and their frequencies."""
 	return f"""
-	SELECT `index`, `{freq_column}`
+	SELECT *
 	FROM words
 	WHERE `{freq_column}` IS NOT NULL
 	ORDER BY `{freq_column}` DESC
@@ -76,12 +83,41 @@ def fetch_word_data(query: str) -> List[Dict[str, Any]]:
 	with SessionLocal() as session:
 		try:
 			words = session.execute(text(query)).fetchall()
-			for word, freq in words:
-				outputs.append({"word": word, "frequency": freq})
+			outputs = [format_word_data(word) for word in words]
 		except Exception as e:
 			# Log the exception or handle it as needed
 			print(f"An error occurred: {e}")
 	return outputs
+
+def fetch_comment_from_sentence(session, sentence_id: int) -> Dict[str, Any]:
+	"""Fetch comment data for a given sentence."""
+	query = text(f"""
+	SELECT comment_id
+	FROM comment_sentences
+	WHERE sentence_id = '{sentence_id}'
+	""")
+	try:
+		comment = session.execute(query).fetchone()
+		return comment[0]
+	except Exception as e:
+		# Log the exception or handle it as needed
+		print(f"Error fetching comment: {e}")
+		return {}
+
+def fetch_sentences_from_comment(session, comment_id: int) -> List[Dict[str, Any]]:
+	"""Fetch sentences for a given comment."""
+	query = text(f"""
+	SELECT sentence_id
+	FROM comment_sentences
+	WHERE comment_id = '{comment_id}'
+	""")
+	try:
+		sentences = session.execute(query).fetchall()
+		return [sentence[0] for sentence in sentences]
+	except Exception as e:
+		# Log the exception or handle it as needed
+		print(f"Error fetching sentences: {e}")
+		return []
 
 def fetch_example_sentences(session, word: str, limit: int) -> List[Dict[str, Any]]:
 	"""Fetch example sentences for a given word."""
@@ -99,10 +135,19 @@ def fetch_example_sentences(session, word: str, limit: int) -> List[Dict[str, An
 		print(f"Error fetching sentences: {e}")
 		return []
 
+
+def format_comment_data(comment: Tuple) -> Dict[str, Any]:
+	"""Format comment data into a dictionary."""
+	return {
+		"id": comment[0],
+		"post_id": comment[1],
+		"created": comment[2],
+		"text": comment[3],
+		"label": comment[4]
+	}
+
 def format_sentence_data(sentence: Tuple) -> Dict[str, Any]:
 	"""Format sentence data into a dictionary."""
-	# Assuming the sentence tuple contains id, text, and other fields as needed
-	#id	emotion_label	emotion_score	text label
 	return {
 		"id": sentence[0],
 		"emotion_label": sentence[1],
@@ -110,3 +155,18 @@ def format_sentence_data(sentence: Tuple) -> Dict[str, Any]:
 		"text": sentence[3],
 		"label": sentence[4]
 	}
+
+def format_word_data(word: Tuple) -> Dict[str, Any]:
+	"""Format word data into a dictionary."""
+	return {
+		"id": word[0],
+		"word": word[1],
+		"all_freq": word[2],
+		"neutral_freq": word[3],
+		"positive_freq": word[4],
+		"negative_freq": word[5],
+		"neutral_num": word[6],
+		"positive_num": word[7],
+		"negative_num": word[8],
+	}
+
