@@ -108,6 +108,86 @@ def examples(
 			print(f"An error occurred: {e}")
 			raise HTTPException(status_code=500, detail="Internal server error")
 
+@app.get("/comments")
+def comments(
+	id: int,
+) -> List[Dict[str, Any]]:
+	"""
+	Get comments.
+
+	Args:
+	id (int): ID of comment to get data for.
+
+	Returns:
+	List[Dict[str, Any]]: List of comments.
+	"""
+	with SessionLocal() as session:
+		try:
+			comment_query = text(f"""
+			SELECT *
+			FROM comments
+			WHERE id = '{id}'
+			""")
+			comment = session.execute(comment_query).fetchone()
+			return format_comment_data(comment)
+		except Exception as e:
+			# Log the exception or handle it as needed
+			print(f"An error occurred: {e}")
+			raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.get("/sentences")
+def sentences(
+	id: int,
+) -> List[Dict[str, Any]]:
+	"""
+	Get sentences.
+
+	Args:
+	id (int): ID of sentence to get data for.
+
+	Returns:
+	List[Dict[str, Any]]: List of sentences.
+	"""
+	with SessionLocal() as session:
+		try:
+			sentence_query = text(f"""
+			SELECT *
+			FROM sentences
+			WHERE id = '{id}'
+			""")
+			sentence = session.execute(sentence_query).fetchone()
+			return format_sentence_data(sentence)
+		except Exception as e:
+			# Log the exception or handle it as needed
+			print(f"An error occurred: {e}")
+			raise HTTPException(status_code=500, detail="Internal server error")
+
+@app.get("/word/{word}")
+def word(
+	word: str,
+) -> Dict[str, Any]:
+	"""
+	Get word data.
+
+	Args:
+	word (str): Word to get data for.
+
+	Returns:
+	Dict[str, Any]: Dictionary containing word data.
+	"""
+	with SessionLocal() as session:
+		try:
+			word_query = text(f"""
+			SELECT *
+			FROM words
+			WHERE word = '{word}'
+			""")
+			word = session.execute(word_query).fetchone()
+			return format_word_data(word)
+		except Exception as e:
+			# Log the exception or handle it as needed
+			print(f"An error occurred: {e}")
+			raise HTTPException(status_code=500, detail="Internal server error")
 
 def create_word_query(freq_column: str, limit: int) -> str:
 	"""Create SQL query to fetch words and their frequencies."""
