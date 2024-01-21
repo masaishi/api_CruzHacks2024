@@ -1,5 +1,7 @@
 # Sitegeist API
 
+[parent(Sitegeist)](https://github.com/masaishi/Sitegeist)
+
 ## Project Overview
 
 This FastAPI project is designed to analyze and interact with textual data, focusing on Natural Language Processing (NLP) and sentiment analysis. It utilizes OpenAI's GPT-3.5 to generate conversational responses and conducts various analyses on word frequencies and example sentences from a dataset.
